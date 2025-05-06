@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <title>Order Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 600px;
+            margin: 30px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #fefefe;
+        }
+
+        .bot, .user {
+            max-width: 70%;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 10px;
+            clear: both;
+            white-space: pre-wrap;
+        }
+
+        .bot {
+            background-color: #e1f5fe;
+            float: left;
+        }
+
+        .user {
+            background-color: #c8e6c9;
+            float: right;
+        }
+
+        .user::before {
+            content: "👤 "; /* Icon for user */
+        }
+
+        .bot::before {
+            content: "🤖 "; /* Icon for bot */
+        }
+
+        .input-box {
+            display: flex;
+        }
+
+        .input-box input {
+            flex-grow: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        .input-box button {
+            padding: 10px;
+            border: none;
+            background: #0288d1;
+            color: white;
+            border-radius: 5px;
+            margin-left: 5px;
+        }
+
+        .suggestions {
+            margin-top: 15px;
+        }
+
+        .suggestions span {
+            display: inline-block;
+            background-color: #eeeeee;
+            padding: 8px 12px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .suggestions span:hover {
+            background-color: #d1d1d1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Order Assistant Chatbot 🤖</h2>
+        <div class="chat-box" id="chat-box"></div>
+
+        <div class="input-box">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <div class="suggestions">
+            <strong>Try asking:</strong><br>
+            <span onclick="quickSend('How can I place an order?')">How can I place an order?</span>
+            <span onclick="quickSend('What is the delivery time?')">What is the delivery time?</span>
+            <span onclick="quickSend('Cancel my order')">Cancel my order</span>
+            <span onclick="quickSend('Track order ORD123')">Track order ORD123</span>
+        </div>
+    </div>
+
+    <script>
+        function appendMessage(message, sender) {
+            const chatBox = document.getElementById("chat-box");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = sender;
+            msgDiv.textContent = message;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById("user-input");
+            const message = userInput.value.trim();
+            if (message === "") return;
+
+            appendMessage(message, "user");
+            userInput.value = "";
+
+            fetch("/index", {
+                method: "POST",
+                body: JSON.stringify({ message: message }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(res => res.json())
+            .then(data => {
+                appendMessage(data.response, "bot");
+            });
+        }
+
+        function quickSend(text) {
+            document.getElementById("user-input").value = text;
+            sendMessage();
+        }
+    </script>
+</body>
+</html>
